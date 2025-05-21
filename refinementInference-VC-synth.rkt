@@ -51,7 +51,7 @@
  [(synth-vc Γ constants) (true (prim constants))]
  [(synth-vc Γ (e y)) ((cand
                        ,(first (term (synth-vc Γ e)))
-                       (check-vc Γ y s)
+                       (check-vc Γ y s) ;;todo this is wrong
                        )
                        (sub-typed-lambda-type t x y))]
  [(synth-vc Γ (e : t)) ((check-vc Γ e t) t)]

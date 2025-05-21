@@ -106,13 +106,6 @@
                  "(check-sat)"))
    "\n"))
 
-(define z3-ctx
-  (let ([cfg (_Z3_mk_config)])
-    (_Z3_set_param_value cfg "model" "false")
-    (define ctx (_Z3_mk_context cfg))
-    (_Z3_del_config cfg)
-    ctx))
-
 (define (z3-sat? redex-constraint-term)
   (define-values (decls term-str) (smt-pieces redex-constraint-term))
   (define full-script
