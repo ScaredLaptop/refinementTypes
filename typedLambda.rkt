@@ -24,8 +24,9 @@
   #:binding-forms
   (λ (x) e #:refers-to x)
   (let (x = e) in e #:refers-to x)
-  ((x : t) -> s #:refers-to x)
-  (v : p #:refers-to v)
+  ((x : s) -> t #:refers-to x)
+  (b {v : p} #:refers-to v)
+  
   )
 
 (define-metafunction TypedLambda
@@ -145,7 +146,7 @@
   [
     (ent-type Γ (forall (x b) (implies p c)))
     ----------- "ENT-EXT"
-    (ent-type (x : (b {v : p}) Γ) c)
+    (ent-type (x : (b {x : p}) Γ) c)
   ]
 )
 

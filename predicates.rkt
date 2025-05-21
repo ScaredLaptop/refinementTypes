@@ -1,6 +1,5 @@
 #lang racket
 (require redex racket/string racket/syntax)
-;; Ensure these paths are correct for your project structure
 (require "../../../project/racket-z3/racket-z3-lib/ffi/functions.rkt")
 (require "../../../project/racket-z3/racket-z3-lib/ffi/enums.rkt")
 (require "../../../project/racket-z3/racket-z3-lib/ffi/types.rkt")
@@ -8,7 +7,7 @@
 
 (define-language Constraints
   ((x y z)   variable-not-otherwise-mentioned)
-  ((f g)   variable-not-otherwise-mentioned) ; For uninterpreted function symbols
+  ((f g)   variable-not-otherwise-mentioned)
   (bool true false)
   (int  integer)
   (op   + - * / = < > <= >=)
@@ -23,7 +22,8 @@
      (or  p p)
      (not p)
      (if p p p)
-     (app f p))
+     (app f p)
+     (𝜅 y (x ...)))
 
   (c ::=
      p
@@ -31,25 +31,28 @@
      (forall (x b) (implies p c)))
 
   #:binding-forms
-  (forall (x b) _ #:refers-to x))
+  (forall (x b) (implies p c) #:refers-to x)
+  )
 
 (define-metafunction Constraints
   sub-constraints : c x c -> c
-  [(sub-constraints c_1 x_1 c_2) (substitute c_1 x_1 c_2)]
-)
+  [(sub-constraints c_1 x_1 c_2) (substitute c_1 x_1 c_2) (side-condition (begin (displayln "in sub-constraints") #t)) ]
+  )
 
 (define (dbg tag msg)
   (displayln (format "[~a] ~a" tag msg)))
 
-(define (symbol->smt-base-name rkt-symbol)
+(define (racket-symbol->smt-identifier rkt-symbol)
   (define raw-str (symbol->string rkt-symbol))
-  (car (string-split raw-str "«")))
+  (let* ([s-no-left-angle (string-replace raw-str "«" "_rU")])
+    (string-replace s-no-left-angle "»" "_rE")))
+
 
 (define interpreted-ops '(+ - * / = < > <= >=))
 
 (define (compile-c term)
   (match term
-    [(? symbol? v-sym) (symbol->smt-base-name v-sym)]
+    [(? symbol? v-sym) (racket-symbol->smt-identifier v-sym)] ; CHANGED
     [(? boolean?  b)   (if b "true" "false")]
     [(? integer?  n)   (number->string n)]
 
@@ -64,7 +67,7 @@
                                (compile-c p) (compile-c q))]
 
     [(list 'forall (list x-original-sym b-type) (list 'implies p-guard body-c))
-     (define smt-binder-str (symbol->smt-base-name x-original-sym))
+     (define smt-binder-str (racket-symbol->smt-identifier x-original-sym)) ; CHANGED
      (format "(forall ((~a ~a)) (=> ~a ~a))"
              smt-binder-str
              (if (eq? b-type 'Bool) "Bool" "Int")
@@ -72,7 +75,7 @@
              (compile-c body-c))]
 
     [(list 'app f-sym p-arg)
-     (format "(~a ~a)" (symbol->smt-base-name f-sym) (compile-c p-arg))]
+     (format "(~a ~a)" (racket-symbol->smt-identifier f-sym) (compile-c p-arg))] ; CHANGED
 
     [(list (and op-sym (? (lambda (s) (memq s interpreted-ops)))) p1 p2)
      (format "(~a ~a ~a)"
@@ -90,7 +93,7 @@
   (values
    (string-join
     (for/list ([f-sym (in-list (remove-duplicates (collect-app-funs term)))])
-      (format "(declare-fun ~a (Int) Int)" (symbol->smt-base-name f-sym)))
+      (format "(declare-fun ~a (Int) Int)" (racket-symbol->smt-identifier f-sym))) ; CHANGED
     "\n")
    (compile-c term)))
 
@@ -152,4 +155,4 @@
   [(SmtValid c_1) ,(z3-sat? (term c_1))]
 )
 
-(provide Constraints sub-constraints SmtValid compile-c smt-script)
+(provide Constraints sub-constraints SmtValid compile-c smt-script racket-symbol->smt-identifier)

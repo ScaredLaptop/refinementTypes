@@ -126,7 +126,14 @@
 (test-true "Broken 4"
            (redex-match? TypedLambda (Γ x (b (v : p))) (term (• x (Int {x : (< 0 x)}))))
            )
-           
+(test-true
+    "Broken 5"
+  (redex-match? TypedLambda
+  (y : (b {y : p}) Γ)
+  (term (extend (extend • x (Int (x : (< x 0)))) y (Int (y : (= y (+ x 1)))) ))
+  )
+)
+
 (test-true
 "ENT-EXT"
  (judgment-holds
@@ -137,8 +144,8 @@
  )
 )
 
-; ;; todo(liam): expand testing, especially making
-; ;; sure these derivations are correct
+;; todo(liam): expand testing, especially making
+;; sure these derivations are correct
 
 (test-true 
 "SUB-BASE"
@@ -167,7 +174,7 @@
   (subtype-type
     •
     ((x : (Int {x : true})) -> (Int {v : (= v (+ x 1))}))
-    ((x : (Int (x : (<= 0 x)))) -> (Int {y : (<= 0 y)}))
+    ((z : (Int (z : (<= 0 z)))) -> (Int {y : (<= 0 y)}))
   )))
 
 (test-true "l" (redex-match? TypedLambda
@@ -230,6 +237,10 @@
                              (term ((a : (Int {a : true})) -> ((b : (Int {b : true})) -> (Int (c : (= c (+ a b)))))))
                                    ))
 
+(test-equal? "prim test 2" 
+                             (term (prim add))
+                             (term ((a : (Int {a : true})) -> ((b : (Int {b : true})) -> (Int (c : (= c (+ a b)))))))
+                                   )
 (test-true
  "SYN-CON INT"
   (judgment-holds
