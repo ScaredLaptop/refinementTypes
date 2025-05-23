@@ -12,7 +12,7 @@
      ((x : t) -> s)]
   [k ::= B ★] ;;kinds (base or star)
   [Γ • (x : t Γ)] ;; variable binding
-  [refinement-op ::= add sub mul div equals gt lt le ge]
+  [refinement-op ::= add sub mul div equals gt lt leq geq]
   [constants ::= refinement-op integer bool]
   [e ::= constants ;;constants
      x ;; variables
@@ -197,8 +197,8 @@
     [(equals) '=]
     [(gt) '>]
     [(lt) '<]
-    [(le) '<=]
-    [(ge) '>=]
+    [(leq) '<=]
+    [(geq) '>=]
     [else (error "Unknown operator:" op)]))
 
 (define (gen-racket-prim-op-expr refinement-op)

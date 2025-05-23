@@ -21,7 +21,6 @@
 "gen-fresh-template"
 (redex-match?
         TypedLambda/Inference
-    (Int (v : (𝜅 y (v x))))
-    (term (gen-fresh-template (x : (Int {x : true}) •) (Int {HOLE y})))
+    (Int (v : (q y (f z))))
+    (term (gen-fresh-template (x : (Int {x : true}) •) (Int {HOLE hole-name})))
 ))
-

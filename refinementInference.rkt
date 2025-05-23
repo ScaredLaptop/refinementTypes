@@ -12,7 +12,9 @@
      ((x : t) -> s)]
   [k ::= B ★] ;;kinds (base or star)
   [Γ • (x : t Γ)] ;; variable binding
-  [refinement-op ::= add sub mul div equals gt lt le ge]
+  [addition-op ::= add sub mul div]
+  [bool-op ::= equals gt lt leq geq]
+  [refinement-op ::= addition-op bool-op]
   [constants ::= refinement-op integer bool]
   [e ::= constants ;;constants
      x ;; variables
@@ -242,4 +244,4 @@
 
 
 
-(provide TypedLambda/Inference sub-typed-lambda-type gen-racket-prim-op-expr wf-predicate sub-typed-lambda wf-type ent-type extend subtype-type prim synthesis-type free? check-type GetFreshVar)
+(provide TypedLambda/Inference simplify-c sub-typed-lambda-type gen-racket-prim-op-expr wf-predicate sub-typed-lambda wf-type ent-type extend subtype-type prim synthesis-type free? check-type GetFreshVar lookup sub-constraints)

@@ -12,7 +12,7 @@
      ((x : t) -> s)]
   [k ::= B ★] ;;kinds (base or star)
   [Γ • (x : t Γ)] ;; variable binding
-  [refinement-op ::= add sub mul div equals gt lt le ge]
+  [refinement-op ::= add sub mul div equals gt lt leq geq]
   [constants ::= refinement-op integer]
   [e ::= constants ;;constants
      x ;; variables
@@ -21,11 +21,11 @@
      (e x) ;; application
      (e : t) ;; type annotation
      ]
-  #:binding-forms
-  (λ (x) e #:refers-to x)
-  (let (x = e) in e #:refers-to x)
-  ((x : s) -> t #:refers-to x)
-  (b {v : p} #:refers-to v)
+  ; #:binding-forms
+  ; (λ (x) e #:refers-to x)
+  ; (let (x = e) in e #:refers-to x)
+  ; ((x : s) -> t #:refers-to x)
+  ; (b {v : p} #:refers-to v)
   
   )
 
@@ -191,8 +191,8 @@
     [(equals) '=]
     [(gt) '>]
     [(lt) '<]
-    [(le) '<=]
-    [(ge) '>=]
+    [(leq) '<=]
+    [(geq) '>=]
     [else (error "Unknown operator:" op)]))
 
 (define (gen-racket-prim-op-expr refinement-op)

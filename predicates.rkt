@@ -23,20 +23,20 @@
      (not p)
      (if p p p)
      (app f p)
-     (𝜅 y (x ...)))
+     (q y (x ...)))
 
   (c ::=
      p
      (cand c c)
      (forall (x b) (implies p c)))
 
-  #:binding-forms
-  (forall (x b) (implies p c) #:refers-to x)
+  ; #:binding-forms
+  ; (forall (x b) (implies p c) #:refers-to x)
   )
 
 (define-metafunction Constraints
   sub-constraints : c x c -> c
-  [(sub-constraints c_1 x_1 c_2) (substitute c_1 x_1 c_2) (side-condition (begin (displayln "in sub-constraints") #t)) ]
+  [(sub-constraints c_1 x_1 c_2) (substitute c_1 x_1 c_2) ]
   )
 
 (define (dbg tag msg)
@@ -82,6 +82,36 @@
              (symbol->string op-sym) (compile-c p1) (compile-c p2))]
     [_ (error 'compile-c "unknown constraint pattern: ~a" term)]))
 
+(define-metafunction Constraints
+  simplify-c : c -> c
+  [(simplify-c true)  true]
+  [(simplify-c false) false]
+  [(simplify-c (cand c true))
+   (simplify-c c)]
+  [(simplify-c (cand true c))
+   (simplify-c c)]
+  
+  [(simplify-c (forall (x b) (implies p true)))
+   true]
+   
+  [(simplify-c (forall (x b) (implies p c)))
+   (forall (x b) (implies p (simplify-c c)))]
+  
+  
+
+  [(simplify-c (implies p c))
+   (implies p (simplify-c c))]
+
+
+  [(simplify-c (cand c_1 c_2))
+   ,(let* ([s1  (term (simplify-c c_1))]
+           [s2  (term (simplify-c c_2))])
+      (cond
+        [(equal? s1 'true)  s2]    
+        [(equal? s2 'true)  s1]     
+        [else       '(cand ,s1 ,s2)]))]
+  [(simplify-c p)     p] 
+  )
 
 (define (collect-app-funs term)
   (match term
@@ -148,4 +178,4 @@
   [(SmtValid c_1) ,(z3-sat? (term c_1))]
 )
 
-(provide Constraints sub-constraints SmtValid compile-c smt-script racket-symbol->smt-identifier)
+(provide Constraints simplify-c sub-constraints SmtValid compile-c smt-script racket-symbol->smt-identifier)
