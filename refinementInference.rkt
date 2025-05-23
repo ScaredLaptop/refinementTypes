@@ -169,9 +169,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-metafunction TypedLambda/Inference
-  self : x t -> t
-  [(self x (b {v : p})) (b {v : (and p (= v x))})]
-  [(self x t) t])
+ self : x t -> t
+ [(self x (b {v : p})) (b {v_new : (and p (= v_new x))})
+    (where v_new ,(gensym "v"))
+ ]
+ [(self x t) t]
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Typing rules (synthesis / checking)
@@ -254,4 +257,4 @@
          ;; helpers
          simplify-c sub-typed-lambda-type gen-racket-prim-op-expr
          wf-predicate sub-typed-lambda wf-type ent-type extend subtype-type
-         prim synthesis-type free? check-type GetFreshVar lookup sub-constraints)
+         prim synthesis-type free? check-type GetFreshVar lookup sub-constraints self)

@@ -45,17 +45,11 @@
         (cand (sub-vc s_2 s_1)
             (get-implication-constraint x_2 s_2 (sub-vc (sub-typed-lambda-type t_1 x_1 x_2) t_2)))])           
 
-(define-metafunction TypedLambda/Inference
- self-vc : x t -> t
- [(self-vc x (b {v : p})) (b {v_new : (and p (= v_new x))})
-    (where v_new ,(gensym "v"))
- ]
- [(self-vc x t) t]
-)
+
 
 (define-metafunction TypedLambda/Inference
  synth-vc : Γ e -> (c t)
- [(synth-vc Γ x) (true (self-vc x t_x))
+ [(synth-vc Γ x) (true (self x t_x))
     (where t_x (lookup Γ x))
  ]
  [(synth-vc Γ constants_1) (true (prim constants_1))]
@@ -106,4 +100,4 @@
   (where c_prime     (sub-vc s t_prime))]
 )
 
-(provide gen-fresh-template simplify-c fresh-vc flatten-env sub-vc synth-vc check-vc self-vc)
+(provide gen-fresh-template simplify-c fresh-vc flatten-env sub-vc synth-vc check-vc self)

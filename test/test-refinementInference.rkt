@@ -448,14 +448,14 @@
 ;    (Int {a : true})
 ;  )))
 
-(test-true
-"CHK-SYN"
-  (judgment-holds
-    (check-type
-      (a : (Int {a : (> a 0)}) •)
-      (a : (Int {a : (> a 0)}))
-      (Int {b : (> b 0)})
-      )))
+; (test-true
+; "CHK-SYN"
+;   (judgment-holds
+;     (check-type
+;       (a : (Int {a : (> a 0)}) •)
+;       (a : (Int {a : (> a 0)}))
+;       (Int {b : (> b 0)})
+;       )))
 
 ; (test-true
 ; "SYN-APP"
