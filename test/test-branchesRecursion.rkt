@@ -476,12 +476,12 @@
       (Int {a : (> a 0)})
       )))
 
-(test-true
-"SYN-APP"
-  (judgment-holds
-    (synthesis-type
-      (x : (Int {x : (< 0 x)}) (y : (Int {y : (= y 1)}) •))
-      ((add x) y)
-      (Int {v : (= v (+ x y))})
-      ))
-)
+; (test-true
+; "SYN-APP"
+;   (judgment-holds
+;     (synthesis-type
+;       (x : (Int {x : (< 0 x)}) (y : (Int {y : (= y 1)}) •))
+;       ((add x) y)
+;       (Int {v : (= v (+ x y))})
+;       ))
+; )

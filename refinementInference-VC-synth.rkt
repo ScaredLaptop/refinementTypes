@@ -31,7 +31,7 @@
 
 (define-metafunction TypedLambda/Inference
     get-implication-constraint : x t c -> c
-    [(get-implication-constraint x (b {x : p}) c)
+    [(get-implication-constraint x (b {v : p}) c)
         (forall (x b) (implies (sub-constraints p v x) c))]
     [(get-implication-constraint x t c)
         c]
@@ -40,7 +40,9 @@
 (define-metafunction TypedLambda/Inference
  sub-vc : t t -> c
  [(sub-vc (b {v_1 : p_1}) (b {v_2 : p_2}))
-    (forall (v_1 b) (implies p_1 (sub-constraints p_2 v_2 v_1)))]
+    (forall (v_1 b) (implies (sub-constraints p_1 v_1 v_3) (sub-constraints p_2 v_2 v_3)))
+    (where v_3 ,(gensym 'v))
+    ]
 [(sub-vc ((x_1 : s_1) -> t_1) ((x_2 : s_2) -> t_2))
         (cand (sub-vc s_2 s_1)
             (get-implication-constraint x_2 s_2 (sub-vc (sub-typed-lambda-type t_1 x_1 x_2) t_2)))])           
@@ -81,8 +83,8 @@
  ]
  [(check-vc Γ (if x then e_1 else e_2) t)
   (cand c_1 c_2)
- (where c_1 (get-implication-constraint y (Bool {y : x}) (check-vc Γ e_1 t)))
- (where c_2 (get-implication-constraint y (Bool {y : (not x)}) (check-vc Γ e_2 t)))
+ (where c_1 (get-implication-constraint y (Int {y : x}) (check-vc Γ e_1 t)))
+ (where c_2 (get-implication-constraint y (Int {y : (not x)}) (check-vc Γ e_2 t)))
  (where y ,(gensym 'y))
  ]
  [(check-vc Γ (rec x = (e_1 : s_1) in e_2) t)
@@ -92,11 +94,16 @@
   (where Γ_1 (extend Γ x t_1))
   (where t_1 (fresh-vc Γ s_1))
  ]
- [(check-vc Γ e t)
-   (cand c c_prime)
-   (where (c s) (synth-vc Γ e))
-   (where c_prime (sub-vc s t))
-   ]
+;  [(check-vc Γ e t)
+;    (cand c c_prime)
+;    (where (c s) (synth-vc Γ e))
+;    (where c_prime (sub-vc s t)) ; todo(liam) remove this
+;    ]
+[(check-vc Γ e t)
+  (cand c c_prime)
+  (where (c s) (synth-vc Γ e))
+  (where t_prime    (fresh-vc Γ t))    ; elaborate holes
+  (where c_prime     (sub-vc s t_prime))]
 )
 
 (provide gen-fresh-template simplify-c fresh-vc flatten-env sub-vc synth-vc check-vc self-vc)

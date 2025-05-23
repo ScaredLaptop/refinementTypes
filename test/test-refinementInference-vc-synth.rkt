@@ -100,17 +100,9 @@
                 x else
                 ((sub zero) x)))))  
     ))
-
-(term (check-vc
-    (zero : (Int {zero : (= zero 0)})  •)
-    (λ (x)
-        (let (c = ((leq zero) x))      ; c = (0 ≤ x)
-             in (if c
-                    then x
-                    else ((sub zero) x))))
-    ((x : (Int {x : true})) -> (Int {HOLE hole1}))))
-
-(term (simplify-c 
+    
+(term 
+(simplify-c
 (check-vc
     (zero : (Int {zero : (= zero 0)})  •)
     (λ (x)
@@ -118,6 +110,17 @@
              in (if c
                     then x
                     else ((sub zero) x))))
-    ((x : (Int {x : true})) -> (Int {HOLE hole1})))
-
-))
+    ((x : (Int {x : true})) -> (Int {HOLE hole1}))))
+)
+; (term (simplify-c 
+; (check-vc
+;     (zero : (Int {zero : (= zero 0)})  •)
+;     ((λ (x)
+;         (let (c = ((leq zero) x))      ; c = (0 ≤ x)
+;              in (if c
+;                     then x
+;                     else ((sub zero) x))))
+    
+;     ((x : (Int {x : true})) -> (Int {HOLE hole1}))
+; )
+; )))

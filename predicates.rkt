@@ -97,7 +97,7 @@
   [(simplify-c (forall (x b) (implies p c)))
    (forall (x b) (implies p (simplify-c c)))]
   
-  
+  [(simplify-c (implies true c)) (simplify-c c)]
 
   [(simplify-c (implies p c))
    (implies p (simplify-c c))]
