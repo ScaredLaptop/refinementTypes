@@ -476,6 +476,16 @@
       (Int {a : (> a 0)})
       )))
 
+; (show-derivations
+; (build-derivations
+;     (check-type
+;       (a : (Int {a : (> a 0)}) •)
+;       (a : (Int {a : (> a 0)}))
+;       (Int {b : (> b 0)})
+;       )
+; )
+; )
+
 ; (test-true
 ; "SYN-APP"
 ;   (judgment-holds

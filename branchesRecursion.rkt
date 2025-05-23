@@ -164,9 +164,10 @@
   ; Sub-Base
   ; Γ ⊢ 𝑏{𝜈1 :𝑝1} ≺: 𝑏{𝜈2 :𝑝2}
   [
-   (ent-type Γ (forall (v_1 b) (implies p_1 (sub-constraints p_2 v_2 v_1))))
+    (ent-type Γ (forall (v_1 b) (implies p_1 (sub-constraints p_2 v_2 v_1))))
    ------------------------------------- "SUB-BASE"
    (subtype-type Γ (b {v_1 : p_1}) (b {v_2 : p_2}))
+   
    ]
   
   ;; for convenience Int {v : p} :<  Int
@@ -215,7 +216,7 @@
   prim : constants -> t
   [(prim refinement-op) ,(gen-racket-prim-op-expr (term refinement-op))]
   [(prim integer) (Int {v : (= v integer)})]
-  [(prim true) (Bool {v : (and v v)})]
+  [(prim true) (Bool {v : true})]
   [(prim false) (Bool {v : (not v)})]
 )
 

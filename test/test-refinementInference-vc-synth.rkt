@@ -100,7 +100,7 @@
                 x else
                 ((sub zero) x)))))  
     ))
-    
+(parameterize ([current-traced-metafunctions '(check-vc get-implication-constraint)])
 (term 
 (simplify-c
 (check-vc
@@ -111,7 +111,7 @@
                     then x
                     else ((sub zero) x))))
     ((x : (Int {x : true})) -> (Int {HOLE hole1}))))
-)
+))
 ; (term (simplify-c 
 ; (check-vc
 ;     (zero : (Int {zero : (= zero 0)})  •)

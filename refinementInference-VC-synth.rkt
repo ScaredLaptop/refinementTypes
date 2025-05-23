@@ -40,16 +40,16 @@
 (define-metafunction TypedLambda/Inference
  sub-vc : t t -> c
  [(sub-vc (b {v_1 : p_1}) (b {v_2 : p_2}))
-    (forall (v_1 b) (implies (sub-constraints p_1 v_1 v_3) (sub-constraints p_2 v_2 v_3)))
-    (where v_3 ,(gensym 'v))
-    ]
+    (forall (v_1 b) (implies p_1 (sub-constraints p_2 v_2 v_1)))]
 [(sub-vc ((x_1 : s_1) -> t_1) ((x_2 : s_2) -> t_2))
         (cand (sub-vc s_2 s_1)
             (get-implication-constraint x_2 s_2 (sub-vc (sub-typed-lambda-type t_1 x_1 x_2) t_2)))])           
 
 (define-metafunction TypedLambda/Inference
  self-vc : x t -> t
- [(self-vc x (b {v : p})) (b {v : (and p (= v x))})]
+ [(self-vc x (b {v : p})) (b {v_new : (and p (= v_new x))})
+    (where v_new ,(gensym "v"))
+ ]
  [(self-vc x t) t]
 )
 
