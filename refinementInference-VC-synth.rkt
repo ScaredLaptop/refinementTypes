@@ -70,7 +70,7 @@
 
 (define-metafunction TypedLambda/Inference
  check-vc : Γ e t -> c
- [(check-vc Γ (λ (x_1) e) ((x_1 : t) -> s)) (get-implication-constraint x_1 s (check-vc (extend Γ x_1 s) e t))]
+ [(check-vc Γ (λ (x) e) ((x : s) -> t)) (get-implication-constraint x s (check-vc (extend Γ x s) e t))]
  [(check-vc Γ (let (x = e_1) in e_2) t_2) 
     (cand 
         c_1
@@ -81,8 +81,8 @@
  ]
  [(check-vc Γ (if x then e_1 else e_2) t)
   (cand c_1 c_2)
- (where c_1 (get-implication-constraint y (Int {,(gensym 'v) : x}) (check-vc Γ e_1 t)))
- (where c_2 (get-implication-constraint y (Int {,(gensym 'v) : (not x)}) (check-vc Γ e_2 t)))
+ (where c_1 (get-implication-constraint y (Bool {y : x}) (check-vc Γ e_1 t)))
+ (where c_2 (get-implication-constraint y (Bool {y : (not x)}) (check-vc Γ e_2 t)))
  (where y ,(gensym 'y))
  ]
  [(check-vc Γ (rec x = (e_1 : s_1) in e_2) t)
@@ -93,10 +93,10 @@
   (where t_1 (fresh-vc Γ s_1))
  ]
  [(check-vc Γ e t)
- (cand c_1 c_2)
- (where (c_1 s_raw) (synth-vc Γ e))
- (where s        (fresh-vc Γ s_raw))
- (where c_2      (sub-vc s t))]
+   (cand c c_prime)
+   (where (c s) (synth-vc Γ e))
+   (where c_prime (sub-vc s t))
+   ]
 )
 
 (provide gen-fresh-template simplify-c fresh-vc flatten-env sub-vc synth-vc check-vc self-vc)

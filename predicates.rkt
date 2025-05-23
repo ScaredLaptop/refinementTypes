@@ -109,7 +109,7 @@
       (cond
         [(equal? s1 'true)  s2]    
         [(equal? s2 'true)  s1]     
-        [else       '(cand ,s1 ,s2)]))]
+        [else        `(cand ,s1 ,s2)]))]
   [(simplify-c p)     p] 
   )
 
