@@ -77,27 +77,27 @@
  ]
  [(check-vc Γ (if x then e_1 else e_2) t)
   (cand c_1 c_2)
+  (where y ,(gensym 'y))
  (where c_1 (get-implication-constraint y (Int {y : x}) (check-vc Γ e_1 t)))
  (where c_2 (get-implication-constraint y (Int {y : (not x)}) (check-vc Γ e_2 t)))
- (where y ,(gensym 'y))
  ]
  [(check-vc Γ (rec x = (e_1 : s_1) in e_2) t)
   (cand c_1 c_2)
-  (where c_1 (check-vc Γ_1 e_1 t)) 
-  (where c_2 (check-vc Γ_1 e_2 t))
-  (where Γ_1 (extend Γ x t_1))
   (where t_1 (fresh-vc Γ s_1))
+  (where Γ_1 (extend Γ x t_1))
+  (where c_1 (check-vc Γ_1 e_1 t_1)) ;; bug in paper this should be t_1 not t
+  (where c_2 (check-vc Γ_1 e_2 t)) 
+  
  ]
 ;  [(check-vc Γ e t)
 ;    (cand c c_prime)
 ;    (where (c s) (synth-vc Γ e))
 ;    (where c_prime (sub-vc s t)) ; todo(liam) remove this
 ;    ]
-[(check-vc Γ e t)
-  (cand c c_prime)
-  (where (c s) (synth-vc Γ e))
-  (where t_prime    (fresh-vc Γ t))    ; elaborate holes
-  (where c_prime     (sub-vc s t_prime))]
+ [(check-vc Γ e t)
+   (cand c c_prime)
+   (where (c s) (synth-vc Γ e))
+  (where c_prime     (sub-vc s t))]
 )
 
 (provide gen-fresh-template simplify-c fresh-vc flatten-env sub-vc synth-vc check-vc self)
