@@ -5,14 +5,18 @@
 (define-metafunction TypedLambda/Inference
     flatten-env : Γ x ... -> any
     [(flatten-env • x ...) ,(reverse (term (x ...)))]
-    [(flatten-env (x : t Γ) y ...) (flatten-env Γ x y ...)]
+    [(flatten-env (x : b Γ) y ...) (flatten-env Γ x y ...)]
+    [(flatten-env (x : (b r) Γ) y ...) (flatten-env Γ x y ...)]
+    [(flatten-env (x : ((z : t) -> s) Γ) y ...) (flatten-env Γ y ...)] ;;ignore fxn types
 )
 
 (define-metafunction TypedLambda/Inference
     gen-fresh-template : Γ t -> t
     [(gen-fresh-template Γ (b {HOLE x})) 
-        ,(let ([new_binder (gensym "v")]
-                [new_horn_var (gensym (string-append "q-" (symbol->string (term x))))])
+        ,(let ([new_binder (gensym 'v)]
+                [ 
+                    new_horn_var (term x)])
+                    (displayln (format "Fresh template generated ~s" new_binder))
                     (term (b {,new_binder : (q ,new_horn_var ,(append (list new_binder) (term (flatten-env Γ))))}))
                 )
     ]

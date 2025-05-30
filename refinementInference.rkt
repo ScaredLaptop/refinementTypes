@@ -1,11 +1,6 @@
 #lang racket
 (require "predicates.rkt")
 (require redex)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Language definition
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (define-extended-language TypedLambda/Inference Constraints
   [v variable-not-otherwise-mentioned] ; value variable
   [b ::= Int Bool]                    ; basic types
@@ -30,9 +25,9 @@
          (rec x = (e : t) in e)       ;   recursive let
        ])   
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Syntactic helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define hole-cache (make-hash))
+
+(hash-set! hole-cache 'hole1 (term (<= 0 z)))
 
 (define-metafunction TypedLambda/Inference
   sub-typed-lambda : e x e -> e
@@ -41,10 +36,6 @@
 (define-metafunction TypedLambda/Inference
   sub-typed-lambda-type : t x x -> t
   [(sub-typed-lambda-type t_1 x_1 x_2) (substitute t_1 x_1 x_2)])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Environment utilities
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-metafunction TypedLambda/Inference
   extend : Γ x t -> Γ
@@ -71,10 +62,6 @@
   GetFreshVar : Γ -> x
   [(GetFreshVar •) ,(string->symbol "t0")]
   [(GetFreshVar (x : t Γ)) ,(string->symbol (format "t~a" (+ 1 (term (Length Γ)))))] )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Well‑formedness & entailment (unchanged)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-judgment-form TypedLambda/Inference
   #:mode (wf-predicate I I)
@@ -114,11 +101,7 @@
    ------- "SUB-FUN"
    (subtype-type Γ ((x_1 : s_1) -> t_1) ((x_2 : s_2) -> t_2))])
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Primitive operators  –  **UPDATED**
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Mapping from our syntactic operator names to Racket predicates
 (define (get-op-refinement op)
   (case op
     [(add) '+]
@@ -132,19 +115,15 @@
     [(geq)   '>=]
     [else (error "Unknown operator:" op)]))
 
-;; Categorise operators so we can choose result sorts
 (define arithmetic-ops '(add sub mul div))
 (define comparison-ops '(equals gt lt leq geq))
 
-;; Generate a refined type for a primitive operator
-;;  * Arithmetic:  Int -> Int -> {v:Int | v = x <op> y}
-;;  * Comparison:  Int -> Int -> {v:Bool | v ⇔ x <op> y}
+
 (define (gen-racket-prim-op-expr refinement-op)
   (define op (get-op-refinement refinement-op))
   (match (map gensym '(x y v))
     [(list x y v)
-     (if (member refinement-op arithmetic-ops)
-         ;; ---------- arithmetic primitive ----------
+     (begin (displayln (format "gen-op generated ~a" v)) (if (member refinement-op arithmetic-ops)
          `((,x : (Int {,x : true}))
            ->
            ((,y : (Int {,y : true}))
@@ -154,31 +133,25 @@
            ->
            ((,y : (Int {,y : true}))
             ->
-            (Bool {,v : (and (or (not ,v) (,op ,x ,y))   ; v ⇒  x op y
-                (or ,v (not (,op ,x ,y))) )}))))]))
+            (Bool {,v : (and (or (not ,v) (,op ,x ,y))
+                (or ,v (not (,op ,x ,y))) )})))))]))
 
 (define-metafunction TypedLambda/Inference
   prim : constants -> t
   [(prim refinement-op) ,(gen-racket-prim-op-expr (term refinement-op))]
-  [(prim integer) (Int {v : (= v integer)})]
-  [(prim true)    (Bool {v : (= v true)})]
-  [(prim false)   (Bool {v : (= v false)})])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Helper for self‑refinement
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  [(prim integer)  (Int {v : (= v integer)}) (where v ,(gensym 'v))]
+  [(prim true)    (Bool {v : (= v true)}) (where v ,(gensym 'v))]
+  [(prim false)   (Bool {v : (= v false)}) (where v ,(gensym 'v))] )
 
 (define-metafunction TypedLambda/Inference
  self : x t -> t
  [(self x (b {v : p})) (b {v_new : (and p (= v_new x))})
+    
     (where v_new ,(gensym "v"))
+    (side-condition (displayln (format "self generated ~a" (term v_new))))
  ]
  [(self x t) t]
 )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Typing rules (synthesis / checking)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-judgment-form TypedLambda/Inference
   #:mode (synthesis-type I I O)
@@ -216,8 +189,8 @@
    (check-type Γ (let (x = e_1) in e_2) t_2)]
   [(where y (GetFreshVar Γ))
    (check-type Γ x Bool)
-   (check-type (extend Γ y (Int {y : (= x true)}))  e_1 t)
-   (check-type (extend Γ y (Int {y : (= x false)})) e_2 t)
+   (check-type (extend Γ y (Bool {y : (= x true)}))  e_1 t)
+   (check-type (extend Γ y (Bool {y : (= x false)})) e_2 t)
    --------------------- "CHK-IF"
    (check-type Γ (if x then e_1 else e_2) t)]
   [(hole-instantiation s_1 t_1)
@@ -227,21 +200,17 @@
    --------------------- "CHK-REC"
    (check-type Γ (rec x = (e_1 : s_1) in e_2) t_2)])
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Hole instantiation (stub – unchanged)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (define-judgment-form
   TypedLambda/Inference
   #:mode (hole-instantiation I O)
-  #:contract (hole-instantiation s t) ;𝑠⊲𝑡
+  #:contract (hole-instantiation s t)
   [
     --------------- "INS-HOLE"
-    (hole-instantiation (b {HOLE x}) (b{ : true })) ;; TODO UPDATE
+    (hole-instantiation (b {HOLE x}) (b{ : true }))
   ]
   [
     --------------- "INS-CONC"
-    (hole-instantiation (b {v : p}) (b {v : true})) ;; TODO UPDATE
+    (hole-instantiation (b {v : p}) (b {v : true}))
   ]
   [
     (hole-instantiation s_1 s_2) (hole-instantiation t_1 t_2)
@@ -249,12 +218,8 @@
     (hole-instantiation ((x : s_1) -> t_1) ((x : s_2) -> t_2))
   ]
   )
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Provide
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide TypedLambda/Inference
-         ;; helpers
          simplify-c sub-typed-lambda-type gen-racket-prim-op-expr
          wf-predicate sub-typed-lambda wf-type ent-type extend subtype-type
          prim synthesis-type free? check-type GetFreshVar lookup sub-constraints self)

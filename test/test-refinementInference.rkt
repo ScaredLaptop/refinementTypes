@@ -440,13 +440,13 @@
      (Int {v : true})
      )))
 
-; (show-derivations
-; (build-derivations
-;  (synthesis-type
-;    (a : (Int {a : true}) •)
-;    (a : (Int {a : true}))
-;    (Int {a : true})
-;  )))
+(show-derivations
+(build-derivations
+ (synthesis-type
+     (t : (Int {t : true}) •)
+     (t : (Int {t : true}))
+     (Int {v : true})
+     )))
 
 ; (test-true
 ; "CHK-SYN"
@@ -457,12 +457,63 @@
 ;       (Int {b : (> b 0)})
 ;       )))
 
+(test-true
+"SYN-APP"
+  (judgment-holds
+    (synthesis-type
+      (x : (Int {x : (< 0 x)}) (y : (Int {y : (= y 1)}) •))
+      ((add x) y)
+      (Int {v : (= v (+ x y))})
+      ))
+)
+
 ; (test-true
-; "SYN-APP"
+; "Complex"
 ;   (judgment-holds
-;     (synthesis-type
-;       (x : (Int {x : (< 0 x)}) (y : (Int {y : (= y 1)}) •))
-;       ((add x) y)
-;       (Int {v : (= v (+ x y))})
-;       ))
-; )
+;     (check-type
+;       •
+;       (rec zero = (0 : (Int {zero : (= zero 0)})) in (rec assert = ((λ (x) 0) : 
+;     ((x : (Bool {x : x})) -> (Int {v2 : true})))
+;     in 
+;         (rec abs = ((λ (z)
+;         (let (c = ((leq zero) z)) 
+;              in (if c
+;                     then z
+;                     else ((sub zero) z)))) : ((z : (Int {z : true})) -> (Int {z2 : (>= z2 0)}))) in 
+;                     (rec main = ((λ (y)
+;                             (let (l = (abs y)) in 
+;                                 (let (o = ((leq zero) l)) in (assert o))
+;                             )
+                        
+;                         ) : 
+;                         ((y : (Int {y : true})) -> (Int {v : true}))) in main)
+;                     )
+;     ))
+;       ((y : (Int {y : true})) -> (Int {v : true}))
+;       )))
+
+
+(test-true
+"Complex"
+  (judgment-holds
+    (check-type
+      (zero : (Int {zero : (= zero 0)})  •)
+      (λ (x)
+        (let (c = ((leq zero) x)) 
+             in (if c
+                    then x
+                    else ((sub zero) x))))
+      ((x : (Int {x : true})) -> (Int {z2 : (>= z2 0)})
+  ))))
+
+;   (test-true 
+;   "basic"
+; (redex-match? TypedLambda/Inference
+;   e
+;   (term (rec zero = (0 : (Int {zero : (= zero 0)})) in 
+;         (rec abs = ((λ (z)
+;              in 1) : ((z : (Int {z : true})) -> (Int {z2 : (>= z2 0)}))) in 
+;                     abs
+;                     )
+;     ))
+; ))

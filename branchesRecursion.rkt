@@ -206,12 +206,11 @@
   (define op (get-op-refinement refinement-op))
   (match (map gensym '(x y v))
     [(list x y v)
-     `((,x : (Int {,x : true}))
+     (begin (displayln (format "gen-op generated ~a" v)) `((,x : (Int {,x : true}))
        ->
        ((,y : (Int {,y : true}))
         ->
-        (Int {,v : (= ,v (,op ,x ,y))})))]))
-
+        (Int {,v : (= ,v (,op ,x ,y))}))))]))
 (define-metafunction TypedLambda/Recursion
   prim : constants -> t
   [(prim refinement-op) ,(gen-racket-prim-op-expr (term refinement-op))]

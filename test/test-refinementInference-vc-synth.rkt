@@ -103,24 +103,26 @@
                     then z
                     else ((sub zero) z)))) : ((z : (Int {z : true})) -> (Int {HOLE hole1}))) in 
                     (rec main = ((λ (y)
-                            0
-                        
+                            (let (l = (abs y)) in 
+                                (let (o = ((leq zero) l)) in (assert o))
+                            )
+        
                         ) : 
                         ((y : (Int {y : true})) -> (Int {v : true}))) in main)
                     )
     ))  
     ))
-; (term 
-; (simplify-c
-; (check-vc
-;     (zero : (Int {zero : (= zero 0)})  •)
-;     (rec abs = ((λ (x)
-;         (let (c = ((leq zero) x))      ; c = (0 ≤ x)
-;              in (if c
-;                     then x
-;                     else ((sub zero) x)))) : ((x : (Int {x : true})) -> (Int {HOLE hole1}))) in abs)
-;     ((x : (Int {x : true})) -> (Int {HOLE hole1}))))
-; )
+(term 
+(simplify-c
+(check-vc
+    (zero : (Int {zero : (= zero 0)})  •)
+    (rec abs = ((λ (x)
+        (let (c = ((leq zero) x))      ; c = (0 ≤ x)
+             in (if c
+                    then x
+                    else ((sub zero) x)))) : ((x : (Int {x : true})) -> (Int {HOLE hole1}))) in abs)
+    ((x : (Int {x : true})) -> (Int {HOLE hole1}))))
+)
 
 ; (term 
 ; (simplify-c
@@ -141,8 +143,8 @@
 (term 
 (simplify-c
 (check-vc
-    (zero : (Int {zero : (= zero 0)})  •)
-    (rec assert = ((λ (x) 0) : 
+    •
+    (rec zero = (0 : (Int {zero : (= zero 0)})) in (rec assert = ((λ (x) 0) : 
     ((x : (Bool {x : x})) -> (Int {v2 : true})))
     in 
         (rec abs = ((λ (z)
@@ -158,12 +160,12 @@
                         ) : 
                         ((y : (Int {y : true})) -> (Int {v : true}))) in main)
                     )
-    )
+    ))
 
     ((x : (Int {x : true})) -> (Int {v1 : true}))
     )))
 
-
+(term (fresh-vc • ((x : (Int {v2 : true})) -> (Int {HOLE hole2}))) )
 
 ; (term (simplify-c 
 ; (check-vc
@@ -177,4 +179,3 @@
 ;     ((x : (Int {x : true})) -> (Int {HOLE hole1}))
 ; )
 ; )))
-

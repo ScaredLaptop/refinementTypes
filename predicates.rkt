@@ -52,7 +52,7 @@
 
 (define (compile-c term)
   (match term
-    [(? symbol? v-sym) (racket-symbol->smt-identifier v-sym)] ; CHANGED
+    [(? symbol? v-sym) (racket-symbol->smt-identifier v-sym)]
     [(? boolean?  b)   (if b "true" "false")]
     [(? integer?  n)   (number->string n)]
 
@@ -67,7 +67,7 @@
                                (compile-c p) (compile-c q))]
 
     [(list 'forall (list x-original-sym b-type) (list 'implies p-guard body-c))
-     (define smt-binder-str (racket-symbol->smt-identifier x-original-sym)) ; CHANGED
+     (define smt-binder-str (racket-symbol->smt-identifier x-original-sym))
      (format "(forall ((~a ~a)) (=> ~a ~a))"
              smt-binder-str
              (if (eq? b-type 'Bool) "Bool" "Int")
@@ -75,7 +75,7 @@
              (compile-c body-c))]
 
     [(list 'app f-sym p-arg)
-     (format "(~a ~a)" (racket-symbol->smt-identifier f-sym) (compile-c p-arg))] ; CHANGED
+     (format "(~a ~a)" (racket-symbol->smt-identifier f-sym) (compile-c p-arg))]
 
     [(list (and op-sym (? (lambda (s) (memq s interpreted-ops)))) p1 p2)
      (format "(~a ~a ~a)"
